@@ -24,18 +24,22 @@ struct AppConfig {
     app_secret: String,
 }
 
-fn load_config(config_path: &str) -> Result<AppConfig, dyn Error> {
-    let mut config_file = File::open(config_path)?;
+fn load_config(config_path: &str) -> Result<AppConfig, std::io::Error> {
+    let mut config_file = match File::open(config_path) {
+        Ok(f) => f,
+        Err(e) => return Err(e),
+    };
+
     let mut content = String::new();
     let sz = config_file.read_to_string(&mut content)?;
-    let docs = YamlLoader::load_from_str(&content)?;
+    let docs = YamlLoader::load_from_str(&content).unwrap();
     let doc = &docs[0];
 
     let config = AppConfig {
-        consumer_key: String::from(doc["consumer_key"].as_str()),
-        consumer_secret: String::from(doc["consumer_secret"].as_str()),
-        app_token: String::from(doc["app_token"].as_str()),
-        app_secret: String::from(doc["app_secret"].as_str()),
+        consumer_key: String::from(doc["consumer_key"].as_str().unwrap()),
+        consumer_secret: String::from(doc["consumer_secret"].as_str().unwrap()),
+        app_token: String::from(doc["app_token"].as_str().unwrap()),
+        app_secret: String::from(doc["app_secret"].as_str().unwrap()),
     };
 
     return Ok(config);
